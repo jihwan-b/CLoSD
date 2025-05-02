@@ -10,11 +10,13 @@
 If you find this code useful in your research, please cite:
 
 ```
-@article{tevet2024closd,
-  title={CLoSD: Closing the Loop between Simulation and Diffusion for multi-task character control},
-  author={Tevet, Guy and Raab, Sigal and Cohan, Setareh and Reda, Daniele and Luo, Zhengyi and Peng, Xue Bin and Bermano, Amit H and van de Panne, Michiel},
-  journal={arXiv preprint arXiv:2410.03441},
-  year={2024}
+@inproceedings{
+tevet2025closd,
+title={{CL}o{SD}: Closing the Loop between Simulation and Diffusion for multi-task character control},
+author={Guy Tevet and Sigal Raab and Setareh Cohan and Daniele Reda and Zhengyi Luo and Xue Bin Peng and Amit Haim Bermano and Michiel van de Panne},
+booktitle={The Thirteenth International Conference on Learning Representations},
+year={2025},
+url={https://openreview.net/forum?id=pZISppZSTv}
 }
 ```
 
