@@ -31,6 +31,13 @@ from closd.env.tasks import closd_task
 from isaacgym.torch_utils import *
 from closd.utils.closd_util import STATES
 
+### for custom t2m ###
+from transformers import BertTokenizer
+from pathlib import Path
+tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
+# from custom_t2m.globals import custom_prompt
+
+
 class CLoSDT2M(closd_task.CLoSDTask):
     def __init__(self, cfg, sim_params, physics_engine, device_type, device_id, headless):
         super().__init__(cfg=cfg,
@@ -43,6 +50,183 @@ class CLoSDT2M(closd_task.CLoSDTask):
         self.hml_data_buf_size = max(self.fake_mdm_args.context_len, self.planning_horizon_20fps)
         self.hml_prefix_from_data = torch.zeros([self.num_envs, 263, 1, self.hml_data_buf_size], dtype=torch.float32, device=self.device)
         return
+    # version 4 
+    
+    def update_mdm_conditions(self, env_ids):  
+        super().update_mdm_conditions(env_ids)
+
+        try:
+            gt_motion, model_kwargs = next(self.mdm_data_iter)
+        except StopIteration:
+            del self.mdm_data_iter
+            self.mdm_data_iter = iter(self.mdm_data)
+            gt_motion, model_kwargs = next(self.mdm_data_iter)
+
+        # ===== [CLOSD MOD] Queue pop from prompt_queue.txt =====
+        prompt_path = "/home/bong/CLoSD/closd/custom_t2m/prompt_queue.txt"
+        if Path(prompt_path).exists():
+            lines = Path(prompt_path).read_text().strip().splitlines()
+            if len(lines) > 0:
+                input_command = lines[0]  # take first prompt
+                remaining = "\n".join(lines[1:])
+                Path(prompt_path).write_text(remaining)  # remove first line
+            else:
+                input_command = ""
+        else:
+            input_command = ""
+
+        if input_command == "":
+            input_command = "A person is standing still."
+        # ===== [CLOSD MOD END] =====
+
+        tokenized = tokenizer(
+            input_command,
+            return_tensors="pt",
+            padding="max_length",
+            truncation=True,
+            max_length=20
+        )
+        tokens = tokenized["input_ids"][0]
+        length = (tokens != tokenizer.pad_token_id).sum().item()
+
+        for i in env_ids:
+            self.hml_prompts[int(i)] = input_command
+            self.hml_lengths[int(i)] = torch.tensor(length, device=self.device)
+            self.hml_tokens[int(i)] = tokens.to(self.device)
+            self.db_keys[int(i)] = model_kwargs['y']['db_key'][int(i)]
+
+            print(f"[Env {int(i)}] Prompt: {input_command}")
+
+
+    # version 3 (read prompt from txt file)
+    '''
+    def update_mdm_conditions(self, env_ids):  
+        super().update_mdm_conditions(env_ids)
+
+        try:
+            gt_motion, model_kwargs = next(self.mdm_data_iter)
+        except StopIteration:
+            del self.mdm_data_iter
+            self.mdm_data_iter = iter(self.mdm_data)
+            gt_motion, model_kwargs = next(self.mdm_data_iter)
+
+        # ===== [CLOSD MOD] Queue pop from prompt_queue.txt =====
+        prompt_path = "/home/bong/CLoSD/closd/custom_t2m/prompt_queue.txt"
+        if Path(prompt_path).exists():
+            lines = Path(prompt_path).read_text().strip().splitlines()
+            if len(lines) > 0:
+                input_command = lines[0]  # take first prompt
+                remaining = "\n".join(lines[1:])
+                Path(prompt_path).write_text(remaining)  # remove first line
+            else:
+                input_command = ""
+        else:
+            input_command = ""
+
+        if input_command == "":
+            input_command = "A person is standing still."
+        # ===== [CLOSD MOD END] =====
+
+        tokenized = tokenizer(
+            input_command,
+            return_tensors="pt",
+            padding="max_length",
+            truncation=True,
+            max_length=20
+        )
+        tokens = tokenized["input_ids"][0]
+        length = (tokens != tokenizer.pad_token_id).sum().item()
+
+        for i in env_ids:
+            self.hml_prompts[int(i)] = input_command
+            self.hml_lengths[int(i)] = torch.tensor(length, device=self.device)
+            self.hml_tokens[int(i)] = tokens.to(self.device)
+            self.db_keys[int(i)] = model_kwargs['y']['db_key'][int(i)]
+
+            print(f"[Env {int(i)}] Prompt: {input_command}")
+            '''
+
+
+    # version 2 (read prompt from queue)
+    '''
+    def update_mdm_conditions(self, env_ids):  
+        super().update_mdm_conditions(env_ids)
+
+        try:
+            gt_motion, model_kwargs = next(self.mdm_data_iter)
+        except StopIteration:
+            del self.mdm_data_iter
+            self.mdm_data_iter = iter(self.mdm_data)
+            gt_motion, model_kwargs = next(self.mdm_data_iter)
+
+        # ===== [CLOSD MOD] Get prompt from queue or fallback =====
+        try:
+            input_command = custom_prompt.get_nowait()
+            print(f"[CLOSD DEBUG] Got prompt: {input_command}") #debug
+        except:
+            input_command = "A person is standing still."
+            print("[CLOSD DEBUG] Queue empty. Using fallback.") #debug
+        # ===== [CLOSD MOD END] =====
+
+
+        tokenized = tokenizer(
+            input_command,
+            return_tensors="pt",
+            padding="max_length",
+            truncation=True,
+            max_length=20
+        )
+        tokens = tokenized["input_ids"][0]
+        length = (tokens != tokenizer.pad_token_id).sum().item()
+
+        for i in env_ids:
+            self.hml_prompts[int(i)] = input_command
+            self.hml_lengths[int(i)] = torch.tensor(length, device=self.device)
+            self.hml_tokens[int(i)] = tokens.to(self.device)
+            self.db_keys[int(i)] = model_kwargs['y']['db_key'][int(i)]
+
+            print(f"[Env {int(i)}] Prompt: {input_command}")
+    '''
+
+    # version 1 (get motion from input())
+    '''
+    def update_mdm_conditions(self, env_ids):  
+        super().update_mdm_conditions(env_ids)
+
+        try:
+            gt_motion, model_kwargs = next(self.mdm_data_iter)
+        except StopIteration:
+            del self.mdm_data_iter
+            self.mdm_data_iter = iter(self.mdm_data)
+            gt_motion, model_kwargs = next(self.mdm_data_iter)
+
+        # ===== [CLOSD MOD] Prompt from input(), fallback to default =====
+        input_command = input("\n[Enter motion prompt] (press Enter to stand still) > ").strip()
+        if input_command == "":
+            input_command = "A person is standing still."
+
+        tokenized = tokenizer(
+            input_command,
+            return_tensors="pt",
+            padding="max_length",
+            truncation=True,
+            max_length=20
+        )
+        tokens = tokenized["input_ids"][0]
+        length = (tokens != tokenizer.pad_token_id).sum().item()
+        # ===== [CLOSD MOD END] =====
+
+        for i in env_ids:
+            self.hml_prompts[int(i)] = input_command
+            self.hml_lengths[int(i)] = torch.tensor(length, device=self.device)
+            self.hml_tokens[int(i)] = tokens.to(self.device)
+            self.db_keys[int(i)] = model_kwargs['y']['db_key'][int(i)]
+
+            print(f"[Env {int(i)}] Prompt: {input_command}")
+    '''
+
+    # Original
+    '''
     
     def update_mdm_conditions(self, env_ids):  
         super().update_mdm_conditions(env_ids)
@@ -63,6 +247,7 @@ class CLoSDT2M(closd_task.CLoSDTask):
         if self.cfg['env']['dip']['debug_hml']:
             print(f'in update_mdm_conditions: 1st 10 env_ids={env_ids[:10].cpu().numpy()}, prompts={self.hml_prompts[:2]}')
         return
+    '''
     
     def get_cur_done(self):
         # Done signal is not in use for this task

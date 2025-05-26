@@ -332,10 +332,16 @@ class IMAMPPlayerContinuous(amp_players.AMPPlayerContinuous):
                                 print_game_res = True
                                 game_res = info.get("scores", 0.5)
                         if self.print_stats:
+                            # ===== [CLOSD MOD] print prompt + reward + steps =====
+                            prompt = self.env.task.hml_prompts[0] if hasattr(self.env.task, "hml_prompts") else "N/A"
+                            print(f"[CLOSD Episode {games_played}] Prompt: \"{prompt}\" | Reward: {cur_rewards / done_count:.2f} | Steps: {cur_steps / done_count:.0f}")
+                            # ===== [CLOSD MOD END] =====
+                            """
                             if print_game_res:
                                 print("reward:", cur_rewards / done_count, "steps:", cur_steps / done_count, "w:", game_res,)
                             else:
                                 print("reward:", cur_rewards / done_count, "steps:", cur_steps / done_count,)
+                            """
 
                         sum_game_res += game_res
                         # if batch_size//self.num_agents == 1 or games_played >= n_games:
