@@ -514,8 +514,10 @@ class Humanoid(BaseTask):
             # ZL: This way it will simuate one step, then get reset again, squashing any remaining wiredness. Temporary fix
             # print("### safe reset envs ###", env_ids)
             self.gym.simulate(self.sim)
+            # self._in_simulate_reset = True # flag 
             # self._reset_envs(env_ids)
-                # 이 코드가 문제였다..
+            # self._in_simulate_reset = False # flag
+               
             torch.cuda.empty_cache()
             
 
