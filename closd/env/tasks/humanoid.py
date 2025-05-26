@@ -507,14 +507,17 @@ class Humanoid(BaseTask):
             env_ids = to_torch(np.arange(self.num_envs), device=self.device, dtype=torch.long)
         
         self._reset_envs(env_ids)
-
+        # print("### reset envs ###", env_ids)
         if self.safe_reset:
             # import ipdb; ipdb.set_trace()
             # print("3resetting here!!!!", self._humanoid_root_states[0, :3] - self._rigid_body_pos[0, 0])
             # ZL: This way it will simuate one step, then get reset again, squashing any remaining wiredness. Temporary fix
+            # print("### safe reset envs ###", env_ids)
             self.gym.simulate(self.sim)
-            self._reset_envs(env_ids)
+            # self._reset_envs(env_ids)
+                # 이 코드가 문제였다..
             torch.cuda.empty_cache()
+            
 
         return
     

@@ -141,7 +141,9 @@ class CLoSDTask(closd.CLoSD):
                                                    dtype=self.cur_state.dtype, device=self.cur_state.device)
         else:
             self.cur_state[env_ids] = self.init_state
-
+        
+        # debug용
+        print("         closd_task.py에서 호출")
         self.update_mdm_conditions(env_ids)
 
     

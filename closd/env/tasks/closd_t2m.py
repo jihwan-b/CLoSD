@@ -35,6 +35,7 @@ from closd.utils.closd_util import STATES
 from transformers import BertTokenizer
 from pathlib import Path
 tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
+import time 
 # from custom_t2m.globals import custom_prompt
 
 
@@ -55,6 +56,7 @@ class CLoSDT2M(closd_task.CLoSDTask):
     def update_mdm_conditions(self, env_ids):  
         super().update_mdm_conditions(env_ids)
 
+
         try:
             gt_motion, model_kwargs = next(self.mdm_data_iter)
         except StopIteration:
@@ -64,7 +66,10 @@ class CLoSDT2M(closd_task.CLoSDTask):
 
         # ===== [CLOSD MOD] Queue pop from prompt_queue.txt =====
         prompt_path = "/home/bong/CLoSD/closd/custom_t2m/prompt_queue.txt"
+
         if Path(prompt_path).exists():
+            
+            # print("[CLOSD DEBUG] Reading prompt from queue file...")  
             lines = Path(prompt_path).read_text().strip().splitlines()
             if len(lines) > 0:
                 input_command = lines[0]  # take first prompt
@@ -74,9 +79,13 @@ class CLoSDT2M(closd_task.CLoSDTask):
                 input_command = ""
         else:
             input_command = ""
+            # print("[CLOSD DEBUG] Queue file not found. Using fallback.")  
 
         if input_command == "":
             input_command = "A person is standing still."
+            
+        print(f"[Prompt: {input_command}", end="", flush=True)
+        
         # ===== [CLOSD MOD END] =====
 
         tokenized = tokenizer(
@@ -88,16 +97,15 @@ class CLoSDT2M(closd_task.CLoSDTask):
         )
         tokens = tokenized["input_ids"][0]
         length = (tokens != tokenizer.pad_token_id).sum().item()
-
+        
         for i in env_ids:
             self.hml_prompts[int(i)] = input_command
             self.hml_lengths[int(i)] = torch.tensor(length, device=self.device)
             self.hml_tokens[int(i)] = tokens.to(self.device)
             self.db_keys[int(i)] = model_kwargs['y']['db_key'][int(i)]
 
-            print(f"[Env {int(i)}] Prompt: {input_command}")
-
-
+            # print(f"[Env {int(i)}] Prompt: {input_command}")
+            
     # version 3 (read prompt from txt file)
     '''
     def update_mdm_conditions(self, env_ids):  
@@ -144,7 +152,8 @@ class CLoSDT2M(closd_task.CLoSDTask):
             self.db_keys[int(i)] = model_kwargs['y']['db_key'][int(i)]
 
             print(f"[Env {int(i)}] Prompt: {input_command}")
-            '''
+            
+    '''
 
 
     # version 2 (read prompt from queue)
