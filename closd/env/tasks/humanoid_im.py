@@ -372,6 +372,8 @@ class HumanoidIm(humanoid_amp_task.HumanoidAMPTask):
         super()._record_states()
         self.state_record['ref_body_pos_subset'].append(self.ref_body_pos_subset.cpu().clone())
         self.state_record['ref_body_pos_full'].append(self.ref_body_pos.cpu().clone())
+        # prompt 정보도 추가 (안돼서 복구 시킴)
+        # self.state_record['prompt'].append(self.hml_prompts[0])
         # self.state_record['ref_dof_pos'].append(self.ref_dof_pos.cpu().clone())
         if hasattr(self, '_target_states'):
             self.state_record['target_trans'].append(self._target_states[:, :3].cpu().clone())
@@ -380,7 +382,8 @@ class HumanoidIm(humanoid_amp_task.HumanoidAMPTask):
     def _write_states_to_file(self, file_name):
         self.state_record['skeleton_trees'] = self.skeleton_trees
         self.state_record['humanoid_betas'] = self.humanoid_shapes
-        print(f"Dumping states into {file_name}")
+        # 주석처리 함 (깔끔함을 위해)
+        # print(f"Dumping states into {file_name}")
 
         progress = torch.stack(self.state_record['progress'], dim=1)
         progress_diff = torch.cat([progress, -10 * torch.ones(progress.shape[0], 1).to(progress)], dim=-1)
@@ -388,7 +391,19 @@ class HumanoidIm(humanoid_amp_task.HumanoidAMPTask):
         diff = torch.abs(progress_diff[:, :-1] - progress_diff[:, 1:])
         split_idx = torch.nonzero(diff > 1)
         split_idx[:, 1] += 1
+
+        # prompt 추가 위해 수정 (bvh 변환 안되면 다시 복구하기) (안돼서 복구 시킴)
         data_to_dump = {k: torch.stack(v) for k, v in self.state_record.items() if k not in ['skeleton_trees', 'humanoid_betas', "progress"]}
+        
+        #data_to_dump = {}
+        #for k, v in self.state_record.items():
+        #    if k in ['skeleton_trees', 'humanoid_betas', "progress"]:
+        #        continue
+        #    if isinstance(v[0], torch.Tensor):
+        #        data_to_dump[k] = torch.stack(v)
+        #    else:
+        #        data_to_dump[k] = v  # 문자열, 리스트 등 non-Tensor
+        
         fps = 60
         motion_dict_dump = {}
         num_for_this_humanoid = 0

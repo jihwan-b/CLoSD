@@ -186,9 +186,13 @@ class BaseTask():
         states_out = osp.join("output", "states")
         os.makedirs(rendering_out, exist_ok=True)
         os.makedirs(states_out, exist_ok=True)
+
+        # 파일명 간단하게 수정
         self.cfg_name = self.cfg.exp_name
+        
+        # print(f"pkl file saved") # Prompt: {prompt_str}")
         self._video_path = osp.join(rendering_out, f"{self.cfg_name}-%s.mp4")
-        self._states_path = osp.join(states_out, f"{self.cfg_name}-%s.pkl")
+        self._states_path = osp.join(states_out, f"robogo_t2m-%s.pkl")
         # self.gym.draw_env_rigid_contacts(self.viewer, self.envs[1], gymapi.Vec3(0.9, 0.3, 0.3), 1.0, True)
 
     # set gravity based on up axis and return axis index
@@ -405,10 +409,16 @@ class BaseTask():
                         del self.writer
                         
                     self._write_states_to_file(self.curr_states_file_name)
-                    print(f"============ Video finished writing {self.curr_states_file_name}============")
+
+                    # 수정
+                    prompt_str = getattr(self, 'hml_prompts', ["N/A"])[0]
+                    print(f"pkl file saved") # | Prompt: {prompt_str}")
+                    # print(f"============ Video finished writing {self.curr_states_file_name}============")
 
                 else:
-                    print(f"============ Writing video ============")
+                    # 수정
+                    # print(f"============ Writing video ============")
+                    pass
                 self.recording_state_change = False
 
             if self.recording:
@@ -426,8 +436,14 @@ class BaseTask():
                 if not flags.server_mode:
                     if not "writer" in self.__dict__:
                         curr_date_time = datetime.now().strftime('%Y-%m-%d-%H:%M:%S')
-                        self.curr_video_file_name = self._video_path % curr_date_time
-                        self.curr_states_file_name = self._states_path % curr_date_time
+
+                        prompt_str = getattr(self, 'prompt_now', "N/A")
+                        #print("### Current prompt: ", prompt_str)
+                        short_prompt = ' '.join(prompt_str.split()[:3]) if prompt_str != "N/A" else "noprompt"
+                        #print("### Short prompt: ", short_prompt)
+
+                        self.curr_video_file_name = self._video_path % f"{curr_date_time}-{short_prompt}"
+                        self.curr_states_file_name = self._states_path % f"{curr_date_time}-{short_prompt}"
                         if not flags.server_mode:
                             self.writer = imageio.get_writer(self.curr_video_file_name, fps=60, macro_block_size=None)
                     self.writer.append_data(self.color_image)

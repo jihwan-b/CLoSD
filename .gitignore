@@ -30,6 +30,13 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+isaacgym/
+isaac-gym-preview-4
+
+os
+sys
+torch
+
 
 .vscode/*
 .vscode/settings.json

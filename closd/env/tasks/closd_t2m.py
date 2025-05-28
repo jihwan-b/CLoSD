@@ -66,22 +66,26 @@ class CLoSDT2M(closd_task.CLoSDTask):
 
         # ===== [CLOSD MOD] Queue pop from prompt_queue.txt =====
         prompt_path = "/home/bong/CLoSD/closd/custom_t2m/prompt_queue.txt"
-        if getattr(self, "_in_simulate_reset", False):
-            input_command = "A person is standing still."  # simulate-only reset → fallback
-        else:
-            if Path(prompt_path).exists():
-                lines = Path(prompt_path).read_text().strip().splitlines()
-                if len(lines) > 0:
-                    input_command = lines[0]
-                    remaining = "\n".join(lines[1:])
-                    Path(prompt_path).write_text(remaining)
-                else:
-                    input_command = ""
+    
+        if Path(prompt_path).exists():
+            lines = Path(prompt_path).read_text().strip().splitlines()
+            if len(lines) > 0:
+                input_command = lines[0]
+                remaining = "\n".join(lines[1:])
+                Path(prompt_path).write_text(remaining)
             else:
                 input_command = ""
+        else:
+            input_command = ""
 
-            if input_command == "":
-                input_command = "A person is standing still."
+        if input_command == "":
+            input_command = "A person is standing still."
+            
+        # 수정: prompt 정보를 파일명 정할 때 쓸 수 있도록
+        self.prompt_now = input_command
+        
+        print(f"[Prompt]: {input_command}")
+        
         
         '''
         if Path(prompt_path).exists():

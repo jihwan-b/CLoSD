@@ -36,7 +36,7 @@ class IMAMPPlayerContinuous(amp_players.AMPPlayerContinuous):
 
         if flags.im_eval:
             self.success_rate = 0
-            self.pbar = tqdm(range(humanoid_env._motion_lib._num_unique_motions // humanoid_env.num_envs))
+            self.pbar = tqdm(range(humanoid_env._motion_libf._num_unique_motions // humanoid_env.num_envs))
             humanoid_env.zero_out_far = False
             humanoid_env.zero_out_far_train = False
             
@@ -124,6 +124,7 @@ class IMAMPPlayerContinuous(amp_players.AMPPlayerContinuous):
             self.curr_stpes += 1
 
             if self.curr_stpes >= curr_max or self.terminate_state.sum() == humanoid_env.num_envs:
+                
                 
                 self.terminate_memory.append(self.terminate_state.cpu().numpy())
                 self.success_rate = (1 - np.concatenate(self.terminate_memory)[: humanoid_env._motion_lib._num_unique_motions].mean())
@@ -278,7 +279,14 @@ class IMAMPPlayerContinuous(amp_players.AMPPlayerContinuous):
             done_indices = []
 
             with torch.no_grad():
-                for n in range(self.max_steps):
+                for n in range(self.max_steps): ## 여기 수정함 fix
+                    # === [START RECORDING] ===
+                    if not getattr(self.env.task, "recording", False):
+                        self.env.task.recording = True
+                        self.env.task.recording_state_change = True
+                    # =========================
+
+
                     obs_dict = self.env_reset(done_indices)
 
 
@@ -309,6 +317,13 @@ class IMAMPPlayerContinuous(amp_players.AMPPlayerContinuous):
                     games_played += done_count
 
                     if done_count > 0:
+                        # === 수정 epsiode end, save pkl files ===
+                        
+                        if hasattr(self.env.task, "recording") and self.env.task.recording:
+                                self.env.task.recording = False
+                                self.env.task.recording_state_change = True
+                                self.env.task.render()
+
                         if self.is_rnn:
                             for s in self.states:
                                 s[:, all_done_indices, :] = (
@@ -332,9 +347,10 @@ class IMAMPPlayerContinuous(amp_players.AMPPlayerContinuous):
                                 print_game_res = True
                                 game_res = info.get("scores", 0.5)
                         if self.print_stats:
+                            
                             # ===== [CLOSD MOD] print prompt + reward + steps =====
                             prompt = self.env.task.hml_prompts[0] if hasattr(self.env.task, "hml_prompts") else "N/A"
-                            print(f" | Episode {games_played} | Reward: {cur_rewards / done_count:.2f} | Steps: {cur_steps / done_count:.0f}]")
+                            print(f"[Episode {games_played} | Reward: {cur_rewards / done_count:.2f} | Steps: {cur_steps / done_count:.0f} | Propmt:{prompt}]")
                             # ===== [CLOSD MOD END] =====
                             """
                             if print_game_res:

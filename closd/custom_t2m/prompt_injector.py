@@ -1,16 +1,21 @@
 from pathlib import Path
 
-prompt_path = "custom_t2m/prompt_queue.txt"
+prompt_path = "/home/bong/CLoSD/closd/custom_t2m/prompt_queue.txt"
 
 print("### RoboGo: Real-time prompt writer (txt mode) started ###")
-print("Type a prompt and press Enter. Type 'exit' to quit.\n")
+print("Type a prompt and press Enter. Type 'exit' to quit, or 'clear' to empty the queue.\n")
 
 while True:
     user_input = input("[Prompt] > ").strip()
+    
     if user_input.lower() == "exit":
         print("Exiting prompt writer.")
         break
-    if user_input:
+    elif user_input.lower() == "clear":
+        with open(prompt_path, "w") as f:
+            pass  # simply truncate the file
+        print("prompt_queue.txt has been cleared.")
+    elif user_input:
         with open(prompt_path, "a") as f:
             f.write(user_input + "\n")
         print(f"Appended to prompt_queue.txt: '{user_input}'")
