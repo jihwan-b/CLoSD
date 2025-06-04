@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# 저장된 pkl 파일을 확인
 
 import sys, os, joblib, dill
 

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# pkl 파일을 탐색
 
 import sys, os, joblib, dill
 
