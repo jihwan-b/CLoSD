@@ -382,7 +382,7 @@ class HumanoidIm(humanoid_amp_task.HumanoidAMPTask):
     def _write_states_to_file(self, file_name):
         self.state_record['skeleton_trees'] = self.skeleton_trees
         self.state_record['humanoid_betas'] = self.humanoid_shapes
-        # 주석처리 함 (깔끔함을 위해)
+        # 파일 저장 문자열 생략
         # print(f"Dumping states into {file_name}")
 
         progress = torch.stack(self.state_record['progress'], dim=1)
@@ -392,17 +392,7 @@ class HumanoidIm(humanoid_amp_task.HumanoidAMPTask):
         split_idx = torch.nonzero(diff > 1)
         split_idx[:, 1] += 1
 
-        # prompt 추가 위해 수정 (bvh 변환 안되면 다시 복구하기) (안돼서 복구 시킴)
         data_to_dump = {k: torch.stack(v) for k, v in self.state_record.items() if k not in ['skeleton_trees', 'humanoid_betas', "progress"]}
-        
-        #data_to_dump = {}
-        #for k, v in self.state_record.items():
-        #    if k in ['skeleton_trees', 'humanoid_betas', "progress"]:
-        #        continue
-        #    if isinstance(v[0], torch.Tensor):
-        #        data_to_dump[k] = torch.stack(v)
-        #    else:
-        #        data_to_dump[k] = v  # 문자열, 리스트 등 non-Tensor
         
         fps = 60
         motion_dict_dump = {}

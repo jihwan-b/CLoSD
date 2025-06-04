@@ -143,7 +143,7 @@ class CLoSDTask(closd.CLoSD):
             self.cur_state[env_ids] = self.init_state
         
         # debug용
-        print("         closd_task.py에서 호출")
+        # print("         closd_task.py에서 호출")
         self.update_mdm_conditions(env_ids)
 
     

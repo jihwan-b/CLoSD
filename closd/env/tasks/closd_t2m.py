@@ -36,8 +36,6 @@ from transformers import BertTokenizer
 from pathlib import Path
 tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
 import time 
-# from custom_t2m.globals import custom_prompt
-
 
 class CLoSDT2M(closd_task.CLoSDTask):
     def __init__(self, cfg, sim_params, physics_engine, device_type, device_id, headless):

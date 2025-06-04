@@ -279,7 +279,7 @@ class IMAMPPlayerContinuous(amp_players.AMPPlayerContinuous):
             done_indices = []
 
             with torch.no_grad():
-                for n in range(self.max_steps): ## 여기 수정함 fix
+                for n in range(self.max_steps): 
                     # === [START RECORDING] ===
                     if not getattr(self.env.task, "recording", False):
                         self.env.task.recording = True
@@ -350,7 +350,9 @@ class IMAMPPlayerContinuous(amp_players.AMPPlayerContinuous):
                             
                             # ===== [CLOSD MOD] print prompt + reward + steps =====
                             prompt = self.env.task.hml_prompts[0] if hasattr(self.env.task, "hml_prompts") else "N/A"
-                            print(f"[Episode {games_played} | Reward: {cur_rewards / done_count:.2f} | Steps: {cur_steps / done_count:.0f} | Propmt:{prompt}]")
+                            print(f"[Episode {games_played} | Reward: {cur_rewards / done_count:.2f} | Steps: {cur_steps / done_count:.0f} | Propmt: {prompt}]")
+                            print()
+                    
                             # ===== [CLOSD MOD END] =====
                             """
                             if print_game_res:

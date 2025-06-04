@@ -1,3 +1,6 @@
+# prompt_queue를 통해 prompt를 실시간으로 입력하기 위한 파일
+# clear 입력시 prompt queue를 비우고, exit 입력시 종료
+
 from pathlib import Path
 
 prompt_path = "/home/bong/CLoSD/closd/custom_t2m/prompt_queue.txt"

@@ -410,13 +410,13 @@ class BaseTask():
                         
                     self._write_states_to_file(self.curr_states_file_name)
 
-                    # 수정
+                    # pkl 파일 저장 확인
                     prompt_str = getattr(self, 'hml_prompts', ["N/A"])[0]
                     print(f"pkl file saved") # | Prompt: {prompt_str}")
                     # print(f"============ Video finished writing {self.curr_states_file_name}============")
 
                 else:
-                    # 수정
+                    # 동영상 저장 관련 문자열 비활성화
                     # print(f"============ Writing video ============")
                     pass
                 self.recording_state_change = False

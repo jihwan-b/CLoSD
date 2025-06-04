@@ -7,7 +7,6 @@ __pycache__/
 out/
 # C extensions
 *.so
-*.pkl
 
 # Distribution / packaging
 .Python
@@ -151,3 +150,4 @@ closd/diffusion_planner/saved_motions
 closd/diffusion_planner/save
 closd/blender/assets/smpl_humanoid
 closd/blender/results
+closd/output/
